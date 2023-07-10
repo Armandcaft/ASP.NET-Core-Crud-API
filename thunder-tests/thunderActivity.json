@@ -1,0 +1,30 @@
+[
+    {
+        "_id": "19986b1b-b008-4c64-b9da-dd1aea8e6912",
+        "colId": "history",
+        "containerId": "",
+        "name": "https://www.thunderclient.com/welcome",
+        "url": "https://www.thunderclient.com/welcome",
+        "method": "GET",
+        "sortNum": 0,
+        "created": "2023-07-07T09:48:45.151Z",
+        "modified": "2023-07-07T09:48:45.151Z",
+        "headers": [],
+        "params": [],
+        "tests": []
+    },
+    {
+        "_id": "2eab2eff-a95a-4214-a506-e587751a3262",
+        "colId": "history",
+        "containerId": "",
+        "name": "http://localhost:5024/api/courses",
+        "url": "http://localhost:5024/api/courses",
+        "method": "GET",
+        "sortNum": 0,
+        "created": "2023-07-07T09:48:51.867Z",
+        "modified": "2023-07-07T09:48:51.867Z",
+        "headers": [],
+        "params": [],
+        "tests": []
+    }
+]
