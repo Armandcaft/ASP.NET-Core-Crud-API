@@ -1,4 +1,8 @@
 using CrudAPI.Models;
+using CrudAPI.DTOs;
+using CrudAPI.Repositories;
+using AutoMapper;
+// using AutoMapper.Extensions.Microsoft.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -9,6 +13,10 @@ using Microsoft.AspNetCore.Http;
 // using Microsoft.AspNetCore.Authentication.JwtBearer;
 // using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Cryptography;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +27,30 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .CreateLogger();
+
+var config = new MapperConfiguration(cfg =>
+    {
+        cfg.AddProfile<MappingProfiles>();
+    });
+var mapper = config.CreateMapper();
+
+var serviceProvider = builder.Services.BuildServiceProvider();
+
+// For Database Seeding
+// using (var scope = serviceProvider.CreateScope())
+// {
+//     // Resolve the required services
+//     var userRepository = scope.ServiceProvider.GetRequiredService<MyUserRepository>(serv);
+//     var productRepository = scope.ServiceProvider.GetRequiredService<ProductRepository>();
+
+//     // Pass the mapper instance to the repositories
+//     // userRepository.ConfigureMapper(mapper);
+//     // productRepository.ConfigureMapper(mapper);
+
+//     // Seed data if needed
+//     MyDataSeeder.SeedData(userRepository, productRepository);
+// }
+
 
 // Add services to the (dependency injection) container.
 builder.Services.AddControllers();
@@ -45,29 +77,30 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Configure the parameters for validating the JWT token
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            // Validate the issuer of the token
+            ValidateIssuer = true,
+            // Validate the audience (recipient) of the token
+            ValidateAudience = true,
+            // Validate the token's lifetime
+            ValidateLifetime = true,
+            // Validate the token's signature
+            ValidateIssuerSigningKey = true,
 
-
-// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//                 .AddCookie(options =>
-//                 {
-//                     options.AccessDeniedPath = new PathString("/Account/AccessDenied");
-//                     options.LoginPath = new PathString("/Account/Login");
-//                 });
-
-// // Configure authentication with JWT bearer tokens
-// builder.services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//     .AddJwtBearer(options =>
-//     {
-//         options.TokenValidationParameters = new TokenValidationParameters
-//         {
-//             ValidateIssuer = true,
-//             ValidateAudience = true,
-//             ValidateIssuerSigningKey = true,
-//             ValidIssuer = "your-issuer",
-//             ValidAudience = "your-audience",
-//             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key"))
-//         };
-//     });
+            // Specify the valid issuer of the token
+            ValidIssuer = "https://your-application.com",
+            // Specify the valid audience (recipient) of the token
+            ValidAudience = "your-api-resource",
+            // Specify the symmetric signing key used for token validation
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("keyString"))
+            // IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+        };
+    });
     
 // // Add authorization policies
 // builder.services.AddAuthorization();
@@ -80,9 +113,15 @@ builder.Services.AddSwaggerGen(options =>
 // .AddEntityFrameworkStores<YourDbContext>()
 // .AddDefaultTokenProviders();
 
-
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddDbContext<CourseapiContext>((serviceProvider, options) =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("constring");
+    var serverVersion = new MySqlServerVersion(new Version(8, 0, 26));
+    options.UseMySql(connectionString, serverVersion);
+});
+builder.Services.AddDbContext<ProductDbContext>((serviceProvider, options) =>
 {
     var connectionString = builder.Configuration.GetConnectionString("constring");
     var serverVersion = new MySqlServerVersion(new Version(8, 0, 26));

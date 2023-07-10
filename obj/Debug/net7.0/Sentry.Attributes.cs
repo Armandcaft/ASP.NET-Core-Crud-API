@@ -10,7 +10,7 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyMetadata("Sentry.ProjectDirectory", "C:\\Users\\NADINE PC\\CrudAPI\\")]
+[assembly: System.Reflection.AssemblyMetadata("Sentry.ProjectDirectory", "c:\\Users\\NADINE PC\\CrudAPI\\")]
 
 // Généré par la classe MSBuild WriteCodeFragment.
 
